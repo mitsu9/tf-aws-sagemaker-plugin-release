@@ -24,8 +24,8 @@ commands:
           command: |
             go get github.com/mitchellh/gox
             go get github.com/tcnksm/ghr
-            cd $GOPATH/src/github.com/terraform-providers/terraform-provider-aws/
-            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG $GOPATH/bin/terraform-provider-aws
+            tar -zcvf terraform-provider-aws.tar.gz $GOPATH/bin/terraform-provider-aws
+            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG terraform-provider-aws.tar.gz
 
 executors:
   golang-alpine:
