@@ -6,7 +6,7 @@ commands:
       - run:
           name: Install necessary libraries
           command: |
-            apk add --update git bash make gcc g++
+            apk add --update git bash make gcc g++ musl-dev openssl
   build:
     steps:
       - run:
@@ -24,8 +24,7 @@ commands:
           command: |
             go get github.com/mitchellh/gox
             go get github.com/tcnksm/ghr
-            tar -zcvf terraform-provider-aws.tar.gz $GOPATH/bin/terraform-provider-aws
-            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG terraform-provider-aws.tar.gz
+            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG $GOPATH/bin/terraform-provider-aws
 
 executors:
   golang-alpine:
