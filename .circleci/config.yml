@@ -1,0 +1,55 @@
+version: 2.1
+
+commands:
+  install-to-prepare:
+    steps:
+      - run:
+          name: Install necessary libraries
+          command: |
+            apk add --update git bash make gcc g++
+  build:
+    steps:
+      - run:
+          name: Build aws sagemaker plugin
+          command: |
+            git clone https://github.com/cloudetc/terraform-provider-aws.git $GOPATH/src/github.com/terraform-providers/terraform-provider-aws
+            cd $GOPATH/src/github.com/terraform-providers/terraform-provider-aws/
+            git checkout feature/resource-aws-sagemaker-endpoint
+            make fmt
+            make build
+  upload-to-release:
+    steps:
+      - run:
+          name: Upload to GitHub release
+          command: |
+            go get github.com/mitchellh/gox
+            go get github.com/tcnksm/ghr
+            cd $GOPATH/src/github.com/terraform-providers/terraform-provider-aws/
+            gox --osarch "linux/amd64 darwin/amd64" -output "${GOPATH}/pkg/{{.Dir}}_{{.OS}}_{{.Arch}}"  ./ ./...
+            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG $GOPATH/pkg/
+
+executors:
+  golang-alpine:
+    docker:
+      - image: golang:alpine
+
+jobs:
+  build_and_upload:
+    executor:
+      name: golang-alpine
+    steps:
+      - checkout
+      - install-to-prepare
+      - build
+      - upload-to-release
+
+workflows:
+  version: 2
+  release:
+    jobs:
+      - build_and_upload:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
